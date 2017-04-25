@@ -1,12 +1,13 @@
 ﻿namespace AddressBook
 {
-    public abstract class Contact
-    {
+    public abstract class Contact : IMatchable
+   {
         public Contact(string phoneNumber)
         {
             _phoneNumber = phoneNumber;
         }
 
+      // public 
         public abstract bool Matches(string term);
 
         public override string ToString()
