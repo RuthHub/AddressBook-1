@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace AddressBook
 {
@@ -63,18 +65,44 @@ namespace AddressBook
       private void DoListRecipes()
       {
          Console.Clear();
-         Console.WriteLine("RECEIPS!");
-         foreach (RecipeType recipeType in _recipes.Keys)
+         Console.WriteLine("RECIPES!");
+
+         string connectionString;
+         connectionString = "Server=localhost;Database=AddressBook;Trusted_Connection=True";
+
+         SqlConnection connection;
+         connection = new SqlConnection(connectionString);
+
+         try
          {
-            Console.WriteLine(recipeType);
-            List<Recipe> specificRecipes = _recipes[recipeType];
-            foreach (Recipe recipe in specificRecipes)
+            connection.Open();
+            SqlCommand command = connection.CreateCommand();
+            command = connection.CreateCommand();
+            command.CommandText = "SELECT RecipeType, RecipeName FROM Recipe";
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
             {
-               Console.WriteLine($"\t{recipe}");
+               string recipeType = reader.GetString(0);
+               string recipeName = reader.GetString(1);
+               Console.WriteLine($"{recipeType}, {recipeName}");
             }
-            Console.WriteLine();
+
+            //foreach (RecipeType recipeType in _recipes.Keys)
+            //{
+            //   Console.WriteLine(recipeType);
+            //   List<Recipe> specificRecipes = _recipes[recipeType];
+            //   foreach (Recipe recipe in specificRecipes)
+            //   {
+            //      Console.WriteLine($"\t{recipe}");
+            //   }
+            //   Console.WriteLine();
+            //}
+            Console.ReadLine();
          }
-         Console.ReadLine();
+         finally
+         {
+            connection.Dispose();
+         }
       }
 
       private void DoSearchEverything()
@@ -102,22 +130,39 @@ namespace AddressBook
 
       private void DoAddRecipe()
       {
-         Console.Clear();
-         Console.WriteLine("Please enter your recipe title: ");
-         string title = GetNonEmptyStringFromUser();
-         Recipe recipe = new Recipe(title);
+         string connectionString;
+         connectionString = "Server=localhost;Database=AddressBook;Trusted_Connection=True";
 
-         Console.WriteLine("What kind of recipe is this? ");
-         for (int i = 0; i < (int)RecipeType.UPPER_LIMIT; i += 1)
+         SqlConnection connection;
+         connection = new SqlConnection(connectionString);
+
+         try
          {
-            Console.WriteLine($"{i}.{(RecipeType)i}");
+            connection.Open();
+            SqlCommand command = connection.CreateCommand();
+
+            Console.Clear();
+            Console.WriteLine("What is your recipe type? ");
+            string type = GetNonEmptyStringFromUser();
+            Console.WriteLine("What is your recipe name? ");
+            string name = GetNonEmptyStringFromUser();
+
+            command.CommandType = CommandType.Text;
+            command.CommandText = @"
+                  insert into Recipe(RecipeType, RecipeName)
+                  values 
+                  (@RecipeType,@RecipeName)
+                  ";
+            command.Parameters.AddWithValue("@RecipeType", type);
+            command.Parameters.AddWithValue("@RecipeName", name);
+            command.ExecuteNonQuery();
          }
-         RecipeType choice = (RecipeType)int.Parse(Console.ReadLine());
-
-         List<Recipe> specificRecipes = _recipes[choice];
-         specificRecipes.Add(recipe);
-
+         finally
+         {
+            connection.Dispose();
+         }
       }
+
 
       private void DoRemoveContact()
       {
@@ -243,7 +288,7 @@ namespace AddressBook
       private MenuOption GetMenuOption()
       {
          int choice = GetNumberFromUser();
-                  
+
          while (choice < 0 || choice >= (int)MenuOption.UPPER_LIMIT)
          {
             Console.WriteLine("That is not valid.");
