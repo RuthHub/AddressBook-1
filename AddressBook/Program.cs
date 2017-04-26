@@ -7,6 +7,8 @@ namespace AddressBook
     {
         static void Main(string[] args)
         {
+
+         // I LOVE THIS STUFF SO MUCH
          string name = ConfigurationManager.AppSettings["ApplicationName"];
          Console.WriteLine("WECOME TO:");
          Console.WriteLine(name);
